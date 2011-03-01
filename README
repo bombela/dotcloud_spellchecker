@@ -1,0 +1,24 @@
+A demo project for dotcloud providing a simple spell checking service.
+
+The drastically easy to use tools offered by dotcloud permit this fancy
+architecture:
+
+- push.spell.dotcloud.com
+  A simple web service to feed the spell checker database for training the probability
+  model (a complicated way to say: word counting).
+
+- spellchecker.spell.dotcloud.com
+  A simple web service to spell check some text.
+
+- broker.spell.dotcloud.com
+  A broker (rabbitmq) as a message passing service, used to route message
+  between push and spell checker services to/from the workers.
+
+- worker1.spell.dotcloud.com
+- worker2.spell.dotcloud.com
+- worker3.spell.dotcloud.com
+  Service used as worker to process the spell checking computation as well as
+  words counting job.
+
+- monitor.spell.dotcloud.com
+  A simple web page to provide some statistic about all the machinery.
