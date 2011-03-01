@@ -7,7 +7,7 @@ architecture:
   A simple web service to feed the spell checker database for training the probability
   model (a complicated way to say: word counting).
 
-- spellchecker.spell.dotcloud.com
+- checker.spell.dotcloud.com
   A simple web service to spell check some text.
 
 - broker.spell.dotcloud.com
