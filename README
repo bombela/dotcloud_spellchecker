@@ -3,7 +3,7 @@ A demo project for dotcloud providing a simple spell checking service.
 The drastically easy to use tools offered by dotcloud permit this fancy
 architecture:
 
-- push.spell.dotcloud.com
+- train.spell.dotcloud.com
   A simple web service to feed the spell checker database for training the probability
   model (a complicated way to say: word counting).
 
