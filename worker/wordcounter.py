@@ -19,22 +19,18 @@ db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 			port=REDIS_PORT)
 
 def train(words):
-	stats = dict()
+	stats = set()
 	pipe = db.pipeline(transaction=True)
 	for w in words:
 		pipe.zincrby('words', w, -1)
-		if w in stats:
-			stats[w] += 1
-		else:
-			stats[w] = 1
+		stats.add(w)
 	pipe.execute()
-	return [(w, stats[w])
-			for w in sorted(stats.keys(), key=stats.__getitem__, reverse=True)]
+	return len(stats)
 
 @task
 def wordcount(text):
-	stats = train(re.findall('[\w]+', text.lower()))
-	return '[wordcounter on %s] %d words, %s' %(gethostname(), len(stats), stats)
+	cnt = train(re.findall('[\w]+', text.lower()))
+	return '[wordcounter on %s] %d words' %(gethostname(), cnt)
 
 if __name__ == "__main__":
 	print wordcount("hello pouet titi titi pouet pouet")

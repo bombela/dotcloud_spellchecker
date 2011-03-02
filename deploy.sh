@@ -15,6 +15,7 @@ do
 			;;
 		train)
 			cp -f redisconfig.py celeryconfig.py train/
+			cp -f worker/{wordcounter.py,spellchecker.py} train/
 			dotcloud push spell.train train &
 			;;
 		*)

@@ -16,12 +16,17 @@
 				return this.each(function() { doBlink(this,start,finish) });
 			};
 			$(window).load(function() {
-				$('p').blink(1, 8);
+				$('#blink').blink(1, 8);
 			});
 		</script>
 
 		<h1>Feed me with some text to improve the accuracy of my service</h1>
 
-		<p>Blabla</p>
+		<p id='blink'>Blabla</p>
+		<form action="/" method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<input type="submit" value="Submit" />
+		</form>
 	</body>
 </html>

@@ -2,7 +2,6 @@
 import os, sys
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 sys.path = [os.path.dirname(SITE_ROOT)] + sys.path
-print sys.path
 from django.core.management import execute_manager
 try:
     import settings # Assumed to be in the same directory.
