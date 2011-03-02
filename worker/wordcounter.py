@@ -15,21 +15,26 @@ import re
 import redis
 from redisconfig import *
 
-def redisDb(dbname):
-	return redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
-			port=REDIS_PORT, db=dbname)
-
-db_words = redisDb('words')
+db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
+			port=REDIS_PORT)
 
 def train(words):
+	stats = dict()
+	pipe = db.pipeline(transaction=True)
 	for w in words:
-		db_words.incr(w)
+		pipe.zincrby('words', w, -1)
+		if w in stats:
+			stats[w] += 1
+		else:
+			stats[w] = 1
+	pipe.execute()
+	return [(w, stats[w])
+			for w in sorted(stats.keys(), key=stats.__getitem__, reverse=True)]
 
 @task
 def wordcount(text):
-	cnt = 42
-	train(re.findall('[\w]+', text.lower()))
-	return '[wordcounter on %s] %d words'%(gethostname(), cnt)
+	stats = train(re.findall('[\w]+', text.lower()))
+	return '[wordcounter on %s] %d words, %s' %(gethostname(), len(stats), stats)
 
 if __name__ == "__main__":
-	print wordcount("hello pouet titi")
+	print wordcount("hello pouet titi titi pouet pouet")
