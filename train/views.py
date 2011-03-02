@@ -20,6 +20,7 @@ from wordcounter import wordcount
 import redis
 from redisconfig import *
 
+import simplejson
 from django.core.serializers import json
 
 db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
@@ -42,13 +43,23 @@ class SubmitTextForm(forms.Form):
 	text   = forms.CharField(max_length=1024*16,
 			widget=forms.Textarea, required=False)
 
+	def _check(self, name):
+		r = name in self.cleaned_data and self.cleaned_data[name]
+		if r:
+			return 1
+		return 0
+
 	def clean(self):
 		super(forms.Form, self).clean()
 
-		if not (self.cleaned_data['upfile']
-				or self.cleaned_data['url']
-				or self.cleaned_data['text']):
+		used = 0
+		used += self._check('upfile')
+		used += self._check('url')
+		used += self._check('text')
+		if used == 0:
 			raise forms.ValidationError('Empty form!')
+		if used != 1:
+			raise forms.ValidationError('Pick one field!')
 
 		f = self.cleaned_data['upfile']
 		if f and f.content_type != 'text/plain':
@@ -72,36 +83,39 @@ def index(request):
 			context_instance=RequestContext(request))
 
 def sendtext(request):
-	print "heeeeeeeee"
-	return HttpResponse("bof")
-
-def sendtext2(request):
-	print "heeeeeeeee"
-	return HttpResponse("bof " + str(request.POST))
-
-	if request.method != 'POST' or not request.is_ajax():
+	if request.method != 'POST':
 		return HttpResponseRedirect('/')
-	print "plop"
-
-	form = SubmitTextForm(request.POST, request.FILES)
-	if form.is_valid():
-		upfile = form.cleaned_data['upfile']
-		url = form.cleaned_data['url']
-		text = form.cleaned_data['text']
-		validated = True
-		if upfile:
-			job = TaskSet(tasks=[wordcount.subtask([text])
-				for chunk in upfile.chunks() for text in splitText(chunk)])
-			results = job.apply_async()
-# store resultes in session...
-			for r in results:
-				print r
-		elif url:
-			pass
-		elif text:
-			pass
-		else:
-			validated = False
-
+	
 	callback = request.GET.get('callback')
-	return JsonResponse("lolita", callback)
+	form = SubmitTextForm(request.POST, request.FILES)
+	
+	if not form.is_valid():
+		return JsonResponse({
+			'form': form.as_p()
+			}, callback)
+
+	upfile = form.cleaned_data['upfile']
+	url = form.cleaned_data['url']
+	text = form.cleaned_data['text']
+	if upfile:
+		job = TaskSet(tasks=[wordcount.subtask([text])
+			for chunk in upfile.chunks() for text in splitText(chunk)])
+# store resultes in session...
+	elif url:
+# download file
+		pass
+	elif text:
+		job = TaskSet(tasks=[wordcount.subtask([t]) for t in splitText(text)])
+		pass
+	
+	results = job.apply_async()
+
+	if request.is_ajax() or ('ajax' in request.POST):
+		response = (0, results.total)
+	else:
+		response = [r for r in results]
+
+	return JsonResponse({
+		'form': form.as_p(),
+		'response': response
+		}, callback)

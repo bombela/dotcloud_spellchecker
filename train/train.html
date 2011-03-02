@@ -5,6 +5,7 @@
 		<title>Spellchecking trainer</title>
 		<script src="http://code.jquery.com/jquery-1.5.1.min.js"></script>
 		<script src="/media/jquery.progressbar.min.js"></script>
+		<script src="/media/ajaxfileupload.js"></script>
 	</head>
 	<body>
 		<script>
@@ -31,10 +32,48 @@
 
 				$('#form').submit(function() {
 					var data = $('#form').serialize();
-					$.post('sendtext', data, function(data) {
-						$('#progress').html(data);
-						$('#activity').show();
-					});
+					
+					$('#progressbar').progressBar(0);
+					$('#activity').show();
+
+					if ($('#id_upfile').val() != "") {
+						$.ajaxFileUpload({
+								url:'sendtext', 
+								secureuri:false,
+								fileElementId: 'id_upfile',
+								dataType: 'json',
+								success: function (data, status)
+								{
+									if(typeof(data.error) != 'undefined')
+									{
+										if(data.error != '')
+										{
+											alert(data.error);
+										}else
+										{
+											alert(data.msg);
+										}
+									}
+								},
+								error: function (data, status, e)
+								{
+									alert(e);
+								}
+						});
+					}
+					else {
+						$.post('sendtext', data, function(data) {
+							if (data.form)
+								$('#form_content').html(data.form);
+							if (data.response) {
+								$('#data').html(
+									$('#progressbar').progressBar(
+										data.response[0] * 100 / data.response[1]
+								));
+								// set timer...
+							}
+						});
+					}
 					return false;
 				});
 			});
@@ -45,13 +84,15 @@
 		<p id='blink'>Blabla</p>
 		<form id="form" action="sendtext" method="post" enctype="multipart/form-data">
 			{% csrf_token %}
-			{{ form.as_p }}
+			<span id='form_content'>
+				{{ form.as_p }}
+			</span>
 			<input type="submit" value="Submit" />
+			<span id="activity"  style="display: none">
+				<img src="/media/processing_dots.gif" id='activity' />
+				<div id="progressbar">0%</div>
+			</span>
 		</form>
-
-		<div id="activity"  style="display: none">
-			<img src="/media/processing_dots.gif" id='activity' />
-			<div id="progressbar">0%</div>
-		</div>
+		<div id="data"></div>
 	</body>
 </html>
