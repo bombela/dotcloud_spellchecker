@@ -103,8 +103,8 @@ def sendtext(request):
 		job = TaskSet(tasks=[wordcount.subtask([text])
 			for chunk in upfile.chunks() for text in splitText(chunk)])
 	elif url:
-		job = TaskSet(tasks=[wordcount.subtask([text])
-			for chunk in urllib2.urlopen(url) for text in splitText(chunk)])
+		page = urllib2.urlopen(url).read()
+		job = TaskSet(tasks=[wordcount.subtask([text]) for text in splitText(page)])
 	elif text:
 		job = TaskSet(tasks=[wordcount.subtask([t]) for t in splitText(text)])
 	
