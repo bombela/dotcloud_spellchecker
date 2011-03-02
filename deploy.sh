@@ -12,6 +12,9 @@ do
 				dotcloud push spell.worker$i worker &
 			done
 			;;
+		train)
+			dotcloud push spell.train train &
+			;;
 		*)
 			echo "unknown service to deploy: $service"
 			;;
