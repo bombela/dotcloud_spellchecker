@@ -1,1 +1,3 @@
 *.pyc
+celeryconfig.py
+redisconfig.py
