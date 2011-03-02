@@ -18,6 +18,10 @@ from redisconfig import *
 def train(words):
 	db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 				port=REDIS_PORT)
+	
+	dt = datetime.today().strftime('%y:%m:%d:%H:%M:%S')
+	db.hincrby('stats.wordcount', dt, 1);
+	db.hincrby('stats.wordcount.' + gethostname(), dt, 1);
 
 	stats = set()
 	pipe = db.pipeline(transaction=True)

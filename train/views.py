@@ -25,8 +25,14 @@ from django.core.serializers import json
 
 import urllib2
 
+from datetime import datetime
+
 db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
-			port=REDIS_PORT)
+		port=REDIS_PORT)
+
+def incCounter(name):
+	db.hincrby('stats.train.' + name,
+		datetime.today().strftime('%y:%m:%d:%H:%M:%S'), 1);
 
 class JsonResponse(HttpResponse):
 	def __init__(self, object, callback):
@@ -80,13 +86,13 @@ def splitText(text):
 	return r
 
 def index(request):
-	db.incr('stats.train.index');
+	incCounter('index')
 	form = SubmitTextForm()
 	return render_to_response('train.html', { 'form': form },
 			context_instance=RequestContext(request))
 
 def sendtext(request):
-	db.incr('stats.train.sendtext');
+	incCounter('sendtext')
 	if request.method != 'POST':
 		return HttpResponseRedirect('/')
 	
