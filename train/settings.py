@@ -1,4 +1,16 @@
-# Django settings for train project.
+#!/usr/bin/env python
+# coding: utf-8
+'''
+File    : settings.py
+Author  : François-Xavier Bourlet
+Contact : bombela@gmail.com
+Date    : 2011 Mar 02
+
+Description : settings for train project.
+'''
+
+import os
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -81,6 +93,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+	SITE_ROOT
 )
 
 INSTALLED_APPS = (
