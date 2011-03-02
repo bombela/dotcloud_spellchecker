@@ -28,7 +28,6 @@ import urllib2
 db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 			port=REDIS_PORT)
 
-
 class JsonResponse(HttpResponse):
 	def __init__(self, object, callback):
 		content = simplejson.dumps(
@@ -70,8 +69,9 @@ class SubmitTextForm(forms.Form):
 
 def splitText(text):
 	r = list()
-	while len(text) > 1024*16:
-		i = 4095
+	maxsize = 1024*512
+	while len(text) > maxsize:
+		i = maxsize - 1
 		while text[i] != ' ':
 			i -= 1
 		r.append(text[0:i])
@@ -80,11 +80,13 @@ def splitText(text):
 	return r
 
 def index(request):
+	db.incr('stats.train.index');
 	form = SubmitTextForm()
 	return render_to_response('train.html', { 'form': form },
 			context_instance=RequestContext(request))
 
 def sendtext(request):
+	db.incr('stats.train.sendtext');
 	if request.method != 'POST':
 		return HttpResponseRedirect('/')
 	
@@ -110,8 +112,6 @@ def sendtext(request):
 	
 	results = job.apply_async()
 
-	if 'results' in request.session:
-		request.session['results'].revoke()
 	request.session['results'] = results
 
 	if request.is_ajax() or ('ajax' in request.POST):
@@ -133,12 +133,7 @@ def status(request):
 	
 	results = request.session['results']
 
-	completed_count = 0
-	for task in results.subtasks:
-		state = task.state
-		if (state == 'SUCCESS'):
-			completed_count += 1
-
+	completed_count = results.completed_count()
 	response = (completed_count, results.total)
 	
 	if response[0] == response[1]:

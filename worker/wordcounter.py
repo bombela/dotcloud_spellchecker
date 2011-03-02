@@ -15,10 +15,10 @@ import re
 import redis
 from redisconfig import *
 
-db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
-			port=REDIS_PORT)
-
 def train(words):
+	db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
+				port=REDIS_PORT)
+
 	stats = set()
 	pipe = db.pipeline(transaction=True)
 	for w in words:
