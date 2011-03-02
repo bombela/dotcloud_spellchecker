@@ -9,11 +9,13 @@ do
 		worker)
 			for i in $(seq 3)
 			do
-				dotcloud push spell.worker$i worker
+				dotcloud push spell.worker$i worker &
 			done
 			;;
 		*)
-			echo "unknown service $service"
+			echo "unknown service to deploy: $service"
 			;;
 	esac
 done
+
+wait
