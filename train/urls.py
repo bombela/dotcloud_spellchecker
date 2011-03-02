@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     
 	(r'^$', 'views.index'),
 	(r'^sendtext$', 'views.sendtext'),
+	(r'^status$', 'views.status'),
 
 	(r'^media/(?P<path>.*)$', 'django.views.static.serve',
 		{'document_root': settings.MEDIA_ROOT}),

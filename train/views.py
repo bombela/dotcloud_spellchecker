@@ -23,6 +23,8 @@ from redisconfig import *
 import simplejson
 from django.core.serializers import json
 
+import urllib2
+
 db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 			port=REDIS_PORT)
 
@@ -100,22 +102,46 @@ def sendtext(request):
 	if upfile:
 		job = TaskSet(tasks=[wordcount.subtask([text])
 			for chunk in upfile.chunks() for text in splitText(chunk)])
-# store resultes in session...
 	elif url:
-# download file
-		pass
+		job = TaskSet(tasks=[wordcount.subtask([text])
+			for chunk in urllib2.urlopen(url) for text in splitText(chunk)])
 	elif text:
 		job = TaskSet(tasks=[wordcount.subtask([t]) for t in splitText(text)])
-		pass
 	
 	results = job.apply_async()
+
+	if 'results' in request.session:
+		request.session['results'].revoke()
+	request.session['results'] = results
 
 	if request.is_ajax() or ('ajax' in request.POST):
 		response = (0, results.total)
 	else:
 		response = [r for r in results]
-
-	return JsonResponse({
+	
+	r = JsonResponse({
 		'form': form.as_p(),
 		'response': response
 		}, callback)
+	return r
+
+def status(request):
+	callback = request.GET.get('callback')
+	
+	if not 'results' in request.session:
+		return JsonResponse(dict(), callback)
+	
+	results = request.session['results']
+
+	completed_count = 0
+	for task in results.subtasks:
+		state = task.state
+		if (state == 'SUCCESS'):
+			completed_count += 1
+
+	response = (completed_count, results.total)
+	
+	if response[0] == response[1]:
+		del request.session['results']
+
+	return JsonResponse({ 'response': response }, callback)

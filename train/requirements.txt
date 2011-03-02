@@ -1,3 +1,4 @@
 django
 Redis
 Celery
+simplejson

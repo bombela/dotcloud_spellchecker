@@ -26,7 +26,7 @@ jQuery.extend({
             io.style.left = '-1000px';
 
             document.body.appendChild(io);
-
+			
             return io			
     },
     createUploadForm: function(id, fileElementId)
@@ -91,14 +91,16 @@ jQuery.extend({
 			{				
 				if(io.contentWindow)
 				{
-					 xml.responseText = io.contentWindow.document.body?io.contentWindow.document.body.innerHTML:null;
+					try {
+					 xml.responseText = io.contentWindow.document.body.childNodes[0].innerHTML?io.contentWindow.document.body.childNodes[0].innerHTML:null; } catch (e) {
+					 xml.responseText = io.contentWindow.document.body.innerHTML?io.contentWindow.document.body.innerHTML:null;
+					 }
                 	 xml.responseXML = io.contentWindow.document.XMLDocument?io.contentWindow.document.XMLDocument:io.contentWindow.document;
-					 
 				}else if(io.contentDocument)
 				{
 					 xml.responseText = io.contentDocument.document.body?io.contentDocument.document.body.innerHTML:null;
                 	xml.responseXML = io.contentDocument.document.XMLDocument?io.contentDocument.document.XMLDocument:io.contentDocument.document;
-				}						
+				}					
             }catch(e)
 			{
 				jQuery.handleError(s, xml, null, e);
@@ -126,7 +128,7 @@ jQuery.extend({
                 } catch(e) 
 				{
                     status = "error";
-                    //jQuery.handleError(s, xml, status, e);
+                    jQuery.handleError(s, xml, status, e);
                 }
 
                 // The request was completed

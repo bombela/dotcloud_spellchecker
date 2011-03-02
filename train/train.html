@@ -9,17 +9,6 @@
 	</head>
 	<body>
 		<script>
-			var doBlink = function(obj,start,finish) {
-				jQuery(obj).fadeOut(300).fadeIn(300);
-					if(start!=finish) {
-						start=start+1; doBlink(obj,start,finish);
-				} };
-			jQuery.fn.blink = function(start,finish) {
-				return this.each(function() { doBlink(this,start,finish) });
-			};
-			$(window).load(function() {
-				$('#blink').blink(1, 8);
-			});
 			$(document).ready(function() {
 				$("#progressbar").progressBar({
 					boxImage		: 'media/progressbar.gif',
@@ -34,7 +23,25 @@
 					var data = $('#form').serialize();
 					
 					$('#progressbar').progressBar(0);
-					$('#activity').show();
+					$('#progressing').show();
+
+					function jsonreceived(data) {
+								$('#progressbar').show();
+								$('#data').html(
+									$('#progressbar').progressBar(
+										data.response[0] * 100 / data.response[1]
+									));
+								if (data.response[0] != data.response[1]) {
+									setTimeout(function () {
+										$.get('status', function(data) {
+											if (data.response) jsonreceived(data);
+										});
+									}, 500);
+								} else {
+									$('#progressbar').hide();
+									$('#progressing').hide();
+								}
+					}
 
 					if ($('#id_upfile').val() != "") {
 						$.ajaxFileUpload({
@@ -44,21 +51,10 @@
 								dataType: 'json',
 								success: function (data, status)
 								{
-									if(typeof(data.error) != 'undefined')
-									{
-										if(data.error != '')
-										{
-											alert(data.error);
-										}else
-										{
-											alert(data.msg);
-										}
-									}
+									if (data)
+										jsonreceived(data);
 								},
-								error: function (data, status, e)
-								{
-									alert(e);
-								}
+								error: function (data, status, e) { }
 						});
 					}
 					else {
@@ -66,11 +62,11 @@
 							if (data.form)
 								$('#form_content').html(data.form);
 							if (data.response) {
-								$('#data').html(
-									$('#progressbar').progressBar(
-										data.response[0] * 100 / data.response[1]
-								));
-								// set timer...
+								jsonreceived(data);
+							}
+							else {
+								console.log("stop...");
+								$('#progressing').hide();
 							}
 						});
 					}
@@ -81,16 +77,16 @@
 
 		<h1>Feed me with some text to improve the accuracy of my service</h1>
 
-		<p id='blink'>Blabla</p>
 		<form id="form" action="sendtext" method="post" enctype="multipart/form-data">
 			{% csrf_token %}
 			<span id='form_content'>
 				{{ form.as_p }}
 			</span>
 			<input type="submit" value="Submit" />
-			<span id="activity"  style="display: none">
-				<img src="/media/processing_dots.gif" id='activity' />
-				<div id="progressbar">0%</div>
+			<span>
+				<img style="display: none" id="progressing"
+					src="/media/processing_dots.gif" id='activity' />
+				<div style="display: none" id="progressbar">0%</div>
 			</span>
 		</form>
 		<div id="data"></div>
