@@ -18,6 +18,10 @@ do
 			cp -f worker/{wordcounter.py,spellchecker.py} train/
 			dotcloud push spell.train train &
 			;;
+		monitor)
+			cp -f redisconfig.py monitor/
+			dotcloud push spell.monitor monitor &
+			;;
 		*)
 			echo "unknown service to deploy: $service"
 			;;
