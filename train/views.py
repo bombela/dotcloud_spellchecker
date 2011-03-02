@@ -9,7 +9,7 @@ Date    : 2011 Mar 02
 Description : 
 '''
 
-from django.shortcuts import render_to_response, HttpResponseRedirect
+from django.shortcuts import render_to_response, HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
 from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -20,8 +20,21 @@ from wordcounter import wordcount
 import redis
 from redisconfig import *
 
+from django.core.serializers import json
+
 db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 			port=REDIS_PORT)
+
+
+class JsonResponse(HttpResponse):
+	def __init__(self, object, callback):
+		content = simplejson.dumps(
+				object, indent=2, cls=json.DjangoJSONEncoder,
+				ensure_ascii=False)
+		if callback != None:
+			content = callback + '(' + content + ')'
+		super(JsonResponse, self).__init__(
+				content, content_type='application/json')
 
 class SubmitTextForm(forms.Form):
 	upfile = forms.FileField(required=False)
@@ -54,29 +67,41 @@ def splitText(text):
 	return r
 
 def index(request):
-	if request.method == 'POST':
-		form = SubmitTextForm(request.POST, request.FILES)
-		if form.is_valid():
-			upfile = form.cleaned_data['upfile']
-			url = form.cleaned_data['url']
-			text = form.cleaned_data['text']
-			validated = True
-			if upfile:
-				job = TaskSet(tasks=[wordcount.subtask([text])
-					for chunk in upfile.chunks() for text in splitText(chunk)])
-				results = job.apply_async()
-				for r in results:
-					print r
-			elif url:
-				pass
-			elif text:
-				pass
-			else:
-				validated = False
-			if validated:
-				return HttpResponseRedirect('/')
-	else:
-		form = SubmitTextForm()
-
+	form = SubmitTextForm()
 	return render_to_response('train.html', { 'form': form },
 			context_instance=RequestContext(request))
+
+def sendtext(request):
+	print "heeeeeeeee"
+	return HttpResponse("bof")
+
+def sendtext2(request):
+	print "heeeeeeeee"
+	return HttpResponse("bof " + str(request.POST))
+
+	if request.method != 'POST' or not request.is_ajax():
+		return HttpResponseRedirect('/')
+	print "plop"
+
+	form = SubmitTextForm(request.POST, request.FILES)
+	if form.is_valid():
+		upfile = form.cleaned_data['upfile']
+		url = form.cleaned_data['url']
+		text = form.cleaned_data['text']
+		validated = True
+		if upfile:
+			job = TaskSet(tasks=[wordcount.subtask([text])
+				for chunk in upfile.chunks() for text in splitText(chunk)])
+			results = job.apply_async()
+# store resultes in session...
+			for r in results:
+				print r
+		elif url:
+			pass
+		elif text:
+			pass
+		else:
+			validated = False
+
+	callback = request.GET.get('callback')
+	return JsonResponse("lolita", callback)

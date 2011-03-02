@@ -4,6 +4,7 @@
 		<meta charset="utf-8" />
 		<title>Spellchecking trainer</title>
 		<script src="http://code.jquery.com/jquery-1.5.1.min.js"></script>
+		<script src="/media/jquery.progressbar.min.js"></script>
 	</head>
 	<body>
 		<script>
@@ -18,15 +19,39 @@
 			$(window).load(function() {
 				$('#blink').blink(1, 8);
 			});
+			$(document).ready(function() {
+				$("#progressbar").progressBar({
+					boxImage		: 'media/progressbar.gif',
+					barImage		: {
+						0:  'media/progressbg_red.gif',
+						30: 'media/progressbg_orange.gif',
+						70: 'media/progressbg_green.gif'
+					},
+				});
+
+				$('#form').submit(function() {
+					var data = $('#form').serialize();
+					$.post('sendtext', data, function(data) {
+						$('#progress').html(data);
+						$('#activity').show();
+					});
+					return false;
+				});
+			});
 		</script>
 
 		<h1>Feed me with some text to improve the accuracy of my service</h1>
 
 		<p id='blink'>Blabla</p>
-		<form action="/" method="post" enctype="multipart/form-data">
+		<form id="form" action="sendtext" method="post" enctype="multipart/form-data">
 			{% csrf_token %}
 			{{ form.as_p }}
 			<input type="submit" value="Submit" />
 		</form>
+
+		<div id="activity"  style="display: none">
+			<img src="/media/processing_dots.gif" id='activity' />
+			<div id="progressbar">0%</div>
+		</div>
 	</body>
 </html>

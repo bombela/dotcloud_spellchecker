@@ -1,10 +1,11 @@
 from django.conf.urls.defaults import *
+from django.conf import settings
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
-urlpatterns = patterns('views',
+urlpatterns = patterns('',
     # Example:
     # (r'^train/', include('train.foo.urls')),
 
@@ -14,5 +15,9 @@ urlpatterns = patterns('views',
     # Uncomment the next line to enable the admin:
     # (r'^admin/', include(admin.site.urls)),
     
-	(r'^$', 'index'),
+	(r'^$', 'views.index'),
+	(r'^sendtext$', 'views.sendtext'),
+
+	(r'^media/(?P<path>.*)$', 'django.views.static.serve',
+		{'document_root': settings.MEDIA_ROOT}),
 )
