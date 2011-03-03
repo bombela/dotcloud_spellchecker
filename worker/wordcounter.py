@@ -36,7 +36,7 @@ def train(words):
 		stats.add(w)
 	pipe.execute()
 	
-	db.hincrby('stats.newwordspermin', dt, len(stats));
+	db.hincrby('stats.uniqwordspermin', dt, len(stats));
 	return len(stats)
 
 @task
