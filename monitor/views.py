@@ -42,7 +42,7 @@ class Chart:
 					  series.addPoint([t, data[1]], true, series.data.length > 20);
 					}
 				   )
-               }, 1000);
+               }, TIMEOUT);
             }
          }
       },
@@ -73,16 +73,18 @@ class Chart:
 	  series: [ { name: 'hit', data: [] } ]
    });
 '''
-	def __init__(self, title, statname):
+	def __init__(self, title, statname, timeout = 1000):
 		self.title = title
 		self.statname = statname
 		self.ytitle = 'hits'
+		self.timeout = str(timeout)
 
 	def __str__(self):
 		r = self.template
 		r = r.replace('MTITLE', self.title)
 		r = r.replace('YTITLE', self.ytitle)
 		r = r.replace('STATNAME', self.statname)
+		r = r.replace('TIMEOUT', self.timeout)
 		return r
 
 	def stats(self):
@@ -105,11 +107,15 @@ class JsonResponse(HttpResponse):
 				content, content_type='application/json')
 
 charts = {};
-def addChart(title, statname):
-	charts[statname] = Chart(title, statname)
+def addChart(title, statname, timeout = 1000):
+	charts[statname] = Chart(title, statname, timeout)
 
 addChart('Training index hits',    'train.index')
 addChart('Training sendtext hits', 'train.sendtext')
+addChart('Wordcounter workers', 'wordcount')
+addChart('Wordcounter worker1', 'wordcount.worker1', 2000)
+addChart('Wordcounter worker2', 'wordcount.worker2', 2000)
+addChart('Wordcounter worker3', 'wordcount.worker3', 2000)
 
 def index(request):
 	return render_to_response('monitor.html', { 'charts': charts.values() },

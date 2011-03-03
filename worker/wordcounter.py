@@ -19,7 +19,9 @@ def train(words):
 	db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 				port=REDIS_PORT)
 	
-	dt = datetime.today().strftime('%y:%m:%d:%H:%M:%S')
+	gmtime = time.gmtime()
+	dt = time.strftime('%y:%m:%d:%H:%M:%S', gmtime)
+
 	db.hincrby('stats.wordcount', dt, 1);
 	db.hincrby('stats.wordcount.' + gethostname(), dt, 1);
 

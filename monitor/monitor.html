@@ -5,7 +5,12 @@
 		<title>Spellchecking monitor</title>
 		<script src="http://code.jquery.com/jquery-1.5.1.min.js"></script>
 		<script src="/media/highcharts.js"></script>
-		<script src="/media/gray.js"></script> 
+		<script src="/media/gray.js"></script>
+
+		<style TYPE="text/css">
+			div.left  { width: 500px; height: 200px; margin: 10px; float: left;  }
+			div.right { width: 500px; height: 200px; margin: 10px; float: right; }
+		</style>
 	</head>
 	<body>
 		<script>
@@ -19,7 +24,12 @@ $(document).ready(function() {
 
 		<h1>Spellchecking realtime monitor</h1>
 
-		<div id="idtrain.index" style="width: 500px; height: 200px; margin: 10px"></div>
-		<div id="idtrain.sendtext" style="width: 500px; height: 200px; margin: 10px"></div>
+		<div id="idtrain.index" class="left"></div>
+		<div id="idtrain.sendtext" class="right"></div>
+		<div id="idwordcount" class="left"></div>
+		
+		<div id="idwordcount.worker1" class="right"></div>
+		<div id="idwordcount.worker2" class="left"></div>
+		<div id="idwordcount.worker3" class="right"></div>
 	</body>
 </html>
