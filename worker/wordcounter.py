@@ -34,13 +34,9 @@ def train(words):
 	for w in words:
 		pipe.zincrby('words', w, -1)
 		stats.add(w)
-	r = pipe.execute()
+	pipe.execute()
 	
-	cnt = 0
-	for i in r:
-		if r == -1:
-			cnt += 1
-	db.hincrby('stats.newwordspermin', dt, cnt);
+	db.hincrby('stats.newwordspermin', dt, len(stats));
 	return len(stats)
 
 @task

@@ -79,6 +79,7 @@ class Chart:
 		self.statname = statname
 		self.ytitle = 'hits'
 		self.timeout = timeout
+		self.minute = False
 
 	def __str__(self):
 		r = self.template
@@ -93,8 +94,11 @@ class Chart:
 		t = time.time() - (self.timeout / 1000)
 		for i in range(0, self.timeout / 1000):
 			gmtime = time.gmtime(t)
-			cnt = db.hget('stats.' + self.statname,
-					time.strftime('%y:%m:%d:%H:%M:%S', gmtime))
+			if self.minute:
+				dt = time.strftime('%y:%m:%d:%H:%M', gmtime)
+			else:
+				dt = time.strftime('%y:%m:%d:%H:%M:%S', gmtime)
+			cnt = db.hget('stats.' + self.statname, dt)
 			if not cnt:
 				cnt = 0
 			r.append([ int(t * 1000), cnt ])
@@ -123,6 +127,9 @@ addChart('Wordcounter worker2', 'wordcount.spell-worker2', 2000)
 addChart('Wordcounter worker3', 'wordcount.spell-worker3', 2000)
 addChart('Words per minute', 'wordspermin', 4000)
 addChart('New words per minute', 'newwordspermin', 4000)
+
+charts['wordspermin'].minute = True
+charts['newwordspermin'].minute = True
 
 def index(request):
 	return render_to_response('monitor.html', { 'charts': charts.values() },
