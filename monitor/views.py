@@ -38,8 +38,9 @@ class Chart:
                setInterval(function() {
 				   $.get(url='stats/STATNAME',
 				   	function (data) {
-				  	  t = (((new Date()).getTime() / 1000) - 1) * 1000;
-					  series.addPoint([t, data[1]], true, series.data.length > 20);
+						for (i = 0; i < data.length; ++i) {
+			series.addPoint([data[i][0], data[i][1]], true, series.data.length > 20);
+						}
 					}
 				   )
                }, TIMEOUT);
@@ -77,24 +78,28 @@ class Chart:
 		self.title = title
 		self.statname = statname
 		self.ytitle = 'hits'
-		self.timeout = str(timeout)
+		self.timeout = timeout
 
 	def __str__(self):
 		r = self.template
 		r = r.replace('MTITLE', self.title)
 		r = r.replace('YTITLE', self.ytitle)
 		r = r.replace('STATNAME', self.statname)
-		r = r.replace('TIMEOUT', self.timeout)
+		r = r.replace('TIMEOUT', str(self.timeout))
 		return r
 
 	def stats(self):
-		t = time.time() - 1
-		gmtime = time.gmtime(t)
-		cnt = db.hget('stats.' + self.statname,
-				time.strftime('%y:%m:%d:%H:%M:%S', gmtime))
-		if not cnt:
-			cnt = 0
-		return ( int(t * 1000), cnt )
+		r = []
+		t = time.time() - (self.timeout / 1000)
+		for i in range(0, self.timeout / 1000):
+			gmtime = time.gmtime(t)
+			cnt = db.hget('stats.' + self.statname,
+					time.strftime('%y:%m:%d:%H:%M:%S', gmtime))
+			if not cnt:
+				cnt = 0
+			r.append([ int(t * 1000), cnt ])
+			t += 1
+		return r
 
 class JsonResponse(HttpResponse):
 	def __init__(self, object, callback):
@@ -113,15 +118,14 @@ def addChart(title, statname, timeout = 1000):
 addChart('Training index hits',    'train.index')
 addChart('Training sendtext hits', 'train.sendtext')
 addChart('Wordcounter workers', 'wordcount')
-addChart('Wordcounter worker1', 'wordcount.worker1', 2000)
-addChart('Wordcounter worker2', 'wordcount.worker2', 2000)
-addChart('Wordcounter worker3', 'wordcount.worker3', 2000)
+addChart('Wordcounter worker1', 'wordcount.spell-worker1', 2000)
+addChart('Wordcounter worker2', 'wordcount.spell-worker2', 2000)
+addChart('Wordcounter worker3', 'wordcount.spell-worker3', 2000)
 
 def index(request):
 	return render_to_response('monitor.html', { 'charts': charts.values() },
 			context_instance = RequestContext(request))
 
 def stats(request, stat):
-	print stat
 	callback = request.GET.get('callback')
 	return JsonResponse(charts[stat].stats(), callback)

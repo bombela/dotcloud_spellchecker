@@ -14,6 +14,7 @@ from socket import gethostname
 import re
 import redis
 from redisconfig import *
+import time
 
 def train(words):
 	db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
