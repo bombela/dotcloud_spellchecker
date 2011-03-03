@@ -25,13 +25,22 @@ def train(words):
 
 	db.hincrby('stats.wordcount', dt, 1);
 	db.hincrby('stats.wordcount.' + gethostname(), dt, 1);
+	
+	dt = time.strftime('%y:%m:%d:%H:%M', gmtime)
+	db.hincrby('stats.wordspermin', dt, len(words));
 
 	stats = set()
 	pipe = db.pipeline(transaction=True)
 	for w in words:
 		pipe.zincrby('words', w, -1)
 		stats.add(w)
-	pipe.execute()
+	r = pipe.execute()
+	
+	cnt = 0
+	for i in r:
+		if r == -1:
+			cnt += 1
+	db.hincrby('stats.newwordspermin', dt, cnt);
 	return len(stats)
 
 @task

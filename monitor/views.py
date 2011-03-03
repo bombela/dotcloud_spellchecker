@@ -121,6 +121,8 @@ addChart('Wordcounter workers', 'wordcount')
 addChart('Wordcounter worker1', 'wordcount.spell-worker1', 2000)
 addChart('Wordcounter worker2', 'wordcount.spell-worker2', 2000)
 addChart('Wordcounter worker3', 'wordcount.spell-worker3', 2000)
+addChart('Words per minute', 'wordspermin', 4000)
+addChart('New words per minute', 'newwordspermin', 4000)
 
 def index(request):
 	return render_to_response('monitor.html', { 'charts': charts.values() },
