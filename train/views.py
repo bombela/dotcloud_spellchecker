@@ -25,14 +25,15 @@ from django.core.serializers import json
 
 import urllib2
 
-from datetime import datetime
+import time
 
 db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 		port=REDIS_PORT)
 
 def incCounter(name):
+	gmtime = time.gmtime()
 	db.hincrby('stats.train.' + name,
-		datetime.today().strftime('%y:%m:%d:%H:%M:%S'), 1);
+			time.strftime('%y:%m:%d:%H:%M:%S', gmtime), 1);
 
 class JsonResponse(HttpResponse):
 	def __init__(self, object, callback):
