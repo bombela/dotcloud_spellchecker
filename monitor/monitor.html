@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Spellchecking monitor</title>
+		<script src="http://code.jquery.com/jquery-1.5.1.min.js"></script>
+		<script src="/media/highcharts.js"></script>
+		<script src="/media/gray.js"></script> 
+	</head>
+	<body>
+		<script>
+var chart;
+$(document).ready(function() {
+	{% for chart in charts %}
+		{{ chart|safe }}
+	{% endfor %}
+});
+		</script>
+
+		<h1>Spellchecking realtime monitor</h1>
+
+		<div id="idtrain.index" style="width: 500px; height: 200px; margin: 10px"></div>
+		<div id="idtrain.sendtext" style="width: 500px; height: 200px; margin: 10px"></div>
+	</body>
+</html>
