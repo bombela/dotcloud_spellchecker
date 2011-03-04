@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Spellchecking data queries</title>
+	</head>
+	<body>
+		<h1>Querie words database</h1>
+
+		<form method="post">
+			{% csrf_token %}
+			{{ QueryFormRank }}
+			<input type="submit" value="Query rank" />
+		</form>
+		
+		<form method="post">
+			{% csrf_token %}
+			{{ QueryFormWords }}
+			<input type="submit" value="Query words" />
+		</form>
+
+		<p>
+			<div id="data">
+				{{ data|safe }}
+			</div>
+		</p>
+	</body>
+</html>
+

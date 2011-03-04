@@ -22,6 +22,8 @@ from django.core.serializers import json
 
 import time
 
+import re
+
 db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 		port=REDIS_PORT)
 
@@ -138,3 +140,45 @@ def index(request):
 def stats(request, stat):
 	callback = request.GET.get('callback')
 	return JsonResponse(charts[stat].stats(), callback)
+
+class QueryFormRank(forms.Form):
+	minRank = forms.IntegerField(min_value=0, initial=0)
+	maxRank = forms.IntegerField(min_value=0, initial=42)
+
+class QueryFormWords(forms.Form):
+	words = forms.CharField()
+
+def query(request):
+	queryFormRank = QueryFormRank()
+	queryFormWords = QueryFormWords()
+	data = ''
+
+	if request.method == 'POST':
+		if 'minRank' in request.POST:
+			queryFormRank = QueryFormRank(request.POST)
+			if queryFormRank.is_valid():
+				data = db.zrange('words',
+						queryFormRank.cleaned_data['minRank'],
+						queryFormRank.cleaned_data['maxRank'], withscores=True)
+				data = ['<tr><td>%s</td><td>%d</td></tr>'%(d[0], -d[1]) for d in data]
+				data = '<table border=1><tr><th>word</th><th>score</th></tr>' + ''.join(data) + '</table>'
+		
+		if 'words' in request.POST:
+			queryFormWords = QueryFormWords(request.POST)
+
+			if queryFormWords.is_valid():
+				words = re.findall('[\w]+', queryFormWords.cleaned_data['words'].lower())
+				data = '<table border=1><tr><th>word</th><th>score</th></tr>'
+				for word in words:
+					score = db.zscore('words', word)
+					if score:
+						data += '<tr><td>%s</td><td>%d</td></tr>'%(word, -score)
+					else:
+						data += '<tr><td>%s</td><td>N/A</td></tr>'%(word)
+				data += '</table>'
+
+	return render_to_response('query.html', {
+		'data': data,
+		'QueryFormRank': queryFormRank,
+		'QueryFormWords': queryFormWords,
+		}, context_instance = RequestContext(request))

@@ -27,6 +27,8 @@ import urllib2
 
 import time
 
+from django.views.decorators.csrf import csrf_exempt
+
 db = redis.Redis(REDIS_HOST, password=REDIS_PASSWORD,
 		port=REDIS_PORT)
 
@@ -86,12 +88,14 @@ def splitText(text):
 	r.append(text)
 	return r
 
+@csrf_exempt
 def index(request):
 	incCounter('index')
 	form = SubmitTextForm()
 	return render_to_response('train.html', { 'form': form },
 			context_instance=RequestContext(request))
 
+@csrf_exempt
 def sendtext(request):
 	incCounter('sendtext')
 	if request.method != 'POST':
