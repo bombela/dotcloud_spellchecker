@@ -1,7 +1,7 @@
 #!/bin/bash
 # François-Xavier Bourlet <bombela@gmail.com>
 
-SERVICES=${@:-"worker train"}
+SERVICES=${@:-"worker monitor train"}
 
 for service in $SERVICES
 do
